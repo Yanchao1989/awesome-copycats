@@ -53,16 +53,11 @@ function run_once(cmd)
   awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
 end
 
---run_once("ibus-daemon -d -x -r -n awesome")
---run_once("/usr/bin/gnome-settings-daemon/gnome-settings-daemon")
 run_once("unagi")
 --run_once("redshift")
---run_once("youdao-dict")
---run_once("nm-applet")
 run_once("variety")
 run_once("unclutter -root")
---run_once("/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1")
-run_once("conky -c ~/.conky/conkyrc_grey")
+--run_once("conky -c ~/.conky/conkyrc_grey")
 
 -- }}}
 
@@ -110,22 +105,13 @@ local layouts = {
 -- {{{ Tags
 tags = {
    names = { " F ", " ƀ ", " Ƅ ", " Ɗ ", " ƈ ", " ƙ " },
-   layout = { layouts[1], layouts[2], layouts[4], layouts[1], layouts[7], layouts[1] }
+   layout = { layouts[1], layouts[2], layouts[4], layouts[2], layouts[7], layouts[2] }
 }
 for s = 1, screen.count() do
 -- Each screen has its own tag table.
    tags[s] = awful.tag(tags.names, s, tags.layout)
 end
 -- }}}
-
---[[ {{{ Wallpaper
-if beautiful.wallpaper then
-    for s = 1, screen.count() do
-        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-    end
-end
--- }}}
-]]
 
 -- {{{ Freedesktop Menu
 mymainmenu = awful.menu.new({ items = require("menugen").build_menu(),
@@ -154,55 +140,6 @@ mytextclock = lain.widgets.abase({
 -- Calendar
 lain.widgets.calendar:attach(mytextclock, { font_size = 10 })
 
---[[
--- Weather
-weathericon = wibox.widget.imagebox(beautiful.widget_weather)
-yawn = lain.widgets.yawn(123456, {
-    settings = function()
-        widget:set_markup(markup(g_color, forecast:lower() .. " @ " .. units .. "°C "))
-    end
-})
-
--- / fs
-fsicon = wibox.widget.imagebox(beautiful.widget_fs)
-fswidget = lain.widgets.fs({
-    settings  = function()
-        widget:set_markup(markup(g_color, fs_now.used .. "% "))
-    end
-})
-
-]]
---[[ Mail IMAP check
--- commented because it needs to be set before use
-mailicon = wibox.widget.imagebox()
-mailicon:buttons(awful.util.table.join(awful.button({ }, 1, function () awful.util.spawn(mail) end)))
-mailwidget = lain.widgets.imap({
-    timeout  = 180,
-    server   = "server",
-    mail     = "mail",
-    password = "keyring get mail",
-    settings = function()
-        if mailcount > 0 then
-            mailicon:set_image(beautiful.widget_mail)
-            widget:set_markup(markup("#cccccc", mailcount .. " "))
-        else
-            widget:set_text("")
-            mailicon:set_image(nil)
-        end
-    end
-})
-]]
-
---[[
--- CPU
-cpuicon = wibox.widget.imagebox()
-cpuicon:set_image(beautiful.widget_cpu)
-cpuwidget = lain.widgets.cpu({
-    settings = function()
-        widget:set_markup(markup(g_color, cpu_now.usage .. "% "))
-    end
-})
-]]
 
 -- Coretemp
 tempicon = wibox.widget.imagebox(beautiful.widget_temp)
@@ -224,72 +161,6 @@ batwidget = lain.widgets.bat({
         widget:set_text(perc)
     end
 })
-
---[[
--- ALSA volume
-volicon = wibox.widget.imagebox(beautiful.widget_vol)
-volumewidget = lain.widgets.alsa({
-    settings = function()
-        if volume_now.status == "off" then
-            volume_now.level = volume_now.level .. "M"
-        end
-
-        widget:set_markup(markup(g_color, volume_now.level .. "% "))
-    end
-})
-
--- Net
-netdownicon = wibox.widget.imagebox(beautiful.widget_netdown)
---netdownicon.align = "middle"
-netdowninfo = wibox.widget.textbox()
-netupicon = wibox.widget.imagebox(beautiful.widget_netup)
---netupicon.align = "middle"
-netupinfo = lain.widgets.net({
-    settings = function()
-        if iface ~= "network off" and
-           string.match(yawn.widget._layout.text, "N/A")
-        then
-            yawn.fetch_weather()
-        end
-
-        widget:set_markup(markup(g_color, net_now.sent .. " "))
-        netdowninfo:set_markup(markup(g_color, net_now.received .. " "))
-    end
-})
-
--- MEM
-memicon = wibox.widget.imagebox(beautiful.widget_mem)
-memwidget = lain.widgets.mem({
-    settings = function()
-        widget:set_markup(markup(g_color, mem_now.used .. "M "))
-    end
-})
-
--- MPD
-mpdicon = wibox.widget.imagebox()
-mpdwidget = lain.widgets.mpd({
-    settings = function()
-        mpd_notification_preset = {
-            text = string.format("%s [%s] - %s\n%s", mpd_now.artist,
-                   mpd_now.album, mpd_now.date, mpd_now.title)
-        }
-
-        if mpd_now.state == "play" then
-            artist = mpd_now.artist .. " > "
-            title  = mpd_now.title .. " "
-            mpdicon:set_image(beautiful.widget_note_on)
-        elseif mpd_now.state == "pause" then
-            artist = "mpd "
-            title  = "paused "
-        else
-            artist = ""
-            title  = ""
-            mpdicon:set_image(nil)
-        end
-        widget:set_markup(markup(g_color, artist) .. markup(g_color, title))
-    end
-})
-]]
 
 -- Spacer
 spacer = wibox.widget.textbox(" ")
@@ -375,33 +246,6 @@ for s = 1, screen.count() do
     local left_layout = wibox.layout.fixed.horizontal()
     left_layout:add(mytaglist[s])
     left_layout:add(mypromptbox[s])
-    --left_layout:add(mpdicon)
-    --left_layout:add(mpdwidget)
-
-    --[[
-    -- Widgets that are aligned to the upper middle
-    local mid_layout = wibox.layout.fixed.horizontal()
-    --mid_layout:add(mailicon)
-    --mid_layout:add(mailwidget)
-    mid_layout:add(netdownicon)
-    mid_layout:add(netdowninfo)
-    mid_layout:add(netupicon)
-    mid_layout:add(netupinfo)
-    mid_layout:add(volicon)
-    mid_layout:add(volumewidget)
-    mid_layout:add(memicon)
-    mid_layout:add(memwidget)
-    mid_layout:add(cpuicon)
-    mid_layout:add(cpuwidget)
-    mid_layout:add(fsicon)
-    mid_layout:add(fswidget)
-    mid_layout:add(weathericon)
-    mid_layout:add(yawn.widget)
-    mid_layout:add(tempicon)
-    mid_layout:add(tempwidget)
-    mid_layout:add(baticon)
-    mid_layout:add(batwidget)
-    ]]
 
     -- Widgets that are aligned to the upper right
     local right_layout = wibox.layout.fixed.horizontal()
@@ -439,9 +283,6 @@ for s = 1, screen.count() do
     bottom_layout:set_right(bottom_right_layout)
     mybottomwibox[s]:set_widget(bottom_layout)
 
-    -- Default not visible
-    --mywibox[s].visible = false
-    --mybottomwibox[s].visible = false
 end
 -- }}}
 
@@ -557,53 +398,6 @@ globalkeys = awful.util.table.join(
 
     -- Widgets popups
     awful.key({ altkey,           }, "c",      function () lain.widgets.calendar:show(7) end),
-    awful.key({ altkey,           }, "h",      function () fswidget.show(7) end),
-    awful.key({ altkey,           }, "w",      function () yawn.show(7) end),
-
-    -- ALSA volume control
-    awful.key({ altkey }, "Up",
-        function ()
-            os.execute(string.format("amixer -c %s set %s 1+", volumewidget.card, volumewidget.channel))
-            volumewidget.update()
-        end),
-    awful.key({ altkey }, "Down",
-        function ()
-            os.execute(string.format("amixer -c %s set %s 1-", volumewidget.card, volumewidget.channel))
-            volumewidget.update()
-        end),
-    awful.key({ altkey }, "m",
-        function ()
-            os.execute(string.format("amixer -c %s set %s toggle", volumewidget.card, volumewidget.channel))
-            --os.execute(string.format("amixer set %s toggle", volumewidget.channel))
-            volumewidget.update()
-        end),
-    awful.key({ altkey, "Control" }, "m",
-        function ()
-            os.execute(string.format("amixer -c %s set %s 100%%", volumewidget.card, volumewidget.channel))
-            volumewidget.update()
-        end),
-
-    -- MPD control
-    awful.key({ altkey, "Control" }, "Up",
-        function ()
-            awful.util.spawn_with_shell("mpc toggle || ncmpc toggle || pms toggle")
-            mpdwidget.update()
-        end),
-    awful.key({ altkey, "Control" }, "Down",
-        function ()
-            awful.util.spawn_with_shell("mpc stop || ncmpc stop || pms stop")
-            mpdwidget.update()
-        end),
-    awful.key({ altkey, "Control" }, "Left",
-        function ()
-            awful.util.spawn_with_shell("mpc prev || ncmpc prev || pms prev")
-            mpdwidget.update()
-        end),
-    awful.key({ altkey, "Control" }, "Right",
-        function ()
-            awful.util.spawn_with_shell("mpc next || ncmpc next || pms next")
-            mpdwidget.update()
-        end),
 
     -- Copy to clipboard
     awful.key({ modkey }, "c", function () os.execute("xsel -p -o | xsel -i -b") end),
