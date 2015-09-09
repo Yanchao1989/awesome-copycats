@@ -1,3 +1,6 @@
 [submodule "lain"]
 	path = lain
 	url = git://github.com/copycat-killer/lain.git
+[submodule "awesome-revelation"]
+	path = awesome-revelation
+	url = https://github.com/Yanchao1989/awesome-revelation.git
