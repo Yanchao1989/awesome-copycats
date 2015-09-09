@@ -93,5 +93,27 @@ add_awesome_OnlyShowIn  /etc/xdg/autostart/gsettings-data-convert.desktop
 add_awesome_OnlyShowIn  /etc/xdg/autostart/indicator-messages.desktop
 add_awesome_OnlyShowIn  /etc/xdg/autostart/polkit-gnome-authentication-agent-1.desktop
 add_awesome_OnlyShowIn  /etc/xdg/autostart/vino-server.desktop
-
 add_awesome_OnlyShowIn  /etc/xdg/autostart/indicator-session.desktop
+
+# gnome-control-center is missing some menues, check all files /usr/share/applications/gnome*panel*. Adding Awesome to the OnlyShowIn Key will make them visible and accessible again. 
+add_awesome_OnlyShowIn /usr/share/applications/gnome-bluetooth-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-color-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-datetime-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-deja-dup-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-display-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-info-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-keyboard-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-mouse-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-network-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-online-accounts-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-power-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-printers-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-region-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-screen-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-sound-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-universal-access-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-user-accounts-panel.desktop
+add_awesome_OnlyShowIn /usr/share/applications/gnome-wacom-panel.desktop
+
+
+
