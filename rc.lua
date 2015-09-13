@@ -61,8 +61,8 @@ run_once("unclutter -root")
 -- {{{ Variable definitions
 
 -- beautiful init
---beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/blackburn/theme.lua")
---
+beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/blackburn/theme.lua")
+
 -- revelation init
 -- https://github.com/guotsuan/awesome-revelation
 revelation.init()
