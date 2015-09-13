@@ -54,11 +54,7 @@ function run_once(cmd)
 end
 
 run_once("unagi")
---run_once("redshift")
---run_once("variety")
 run_once("unclutter -root")
---run_once("conky -c ~/.conky/conkyrc_grey")
-
 -- }}}
 
 -- {{{ Variable definitions
@@ -78,15 +74,15 @@ editor     = "vim"
 editor_cmd = terminal .. " -e " .. editor
 
 -- user defined
-xlocker    = "dm-tool lock"
 browser    = "nautilus --no-desktop"
 browser2   = "firefox"
-gui_editor = "gvim"
 next_wallpaper = "variety -n"
 pre_wallpaper = "variety -p"
+gui_editor = "gvim"
+graphics   = "gimp"
 mail       = terminal .. " -e mutt "
-g_opacity  = 0.80
-g_color    = "#ffffff"
+_opacity  = 0.80
+_color    = "#ffffff"
 
 local layouts = {
     awful.layout.suit.floating,
@@ -104,12 +100,20 @@ local layouts = {
 
 -- {{{ Tags
 tags = {
-   names = { " F ", " ƀ ", " Ƅ ", " Ɗ ", " ƈ ", " ƙ " },
-   layout = { layouts[1], layouts[2], layouts[4], layouts[2], layouts[7], layouts[2] }
+   names = { "web", "term", "docs", "media", "files", "other" },
+   layout = { layouts[1], layouts[3], layouts[4], layouts[1], layouts[7], layouts[1] }
 }
 for s = 1, screen.count() do
 -- Each screen has its own tag table.
    tags[s] = awful.tag(tags.names, s, tags.layout)
+end
+-- }}}
+
+-- {{{ Wallpaper
+if beautiful.wallpaper then
+    for s = 1, screen.count() do
+        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
+    end
 end
 -- }}}
 
@@ -127,25 +131,73 @@ clockicon = wibox.widget.imagebox(beautiful.widget_clock)
 mytextclock = lain.widgets.abase({
     timeout  = 60,
     cmd      = "date +'%A %d %B %R'",
-    settings = function() 
+    settings = function()
         local t_output = ""
         local o_it = string.gmatch(output, "%S+")
 
         for i=1,3 do t_output = t_output .. " " .. o_it(i) end
 
-        widget:set_markup(markup(g_color, t_output) .. markup("#343639", " > ") .. markup(g_color, o_it(1)) .. " ")
+        widget:set_markup(markup("#7788af", t_output) .. markup("#343639", " > ") .. markup("#de5e1e", o_it(1)) .. " ")
     end
 })
 
 -- Calendar
 lain.widgets.calendar:attach(mytextclock, { font_size = 10 })
 
+-- Weather
+weathericon = wibox.widget.imagebox(beautiful.widget_weather)
+myweather = lain.widgets.weather({
+    city_id = 123456, -- placeholder
+    settings = function()
+        descr = weather_now["weather"][1]["description"]:lower()
+        units = math.floor(weather_now["main"]["temp"])
+        widget:set_markup(markup("#eca4c4", descr .. " @ " .. units .. "°C "))
+    end
+})
+
+-- / fs
+fsicon = wibox.widget.imagebox(beautiful.widget_fs)
+fswidget = lain.widgets.fs({
+    settings  = function()
+        widget:set_markup(markup("#80d9d8", fs_now.used .. "% "))
+    end
+})
+
+--[[ Mail IMAP check
+-- commented because it needs to be set before use
+mailicon = wibox.widget.imagebox()
+mailicon:buttons(awful.util.table.join(awful.button({ }, 1, function () awful.util.spawn(mail) end)))
+mailwidget = lain.widgets.imap({
+    timeout  = 180,
+    server   = "server",
+    mail     = "mail",
+    password = "keyring get mail",
+    settings = function()
+        if mailcount > 0 then
+            mailicon:set_image(beautiful.widget_mail)
+            widget:set_markup(markup("#cccccc", mailcount .. " "))
+        else
+            widget:set_text("")
+            mailicon:set_image(nil)
+        end
+    end
+})
+]]
+
+-- CPU
+cpuicon = wibox.widget.imagebox()
+cpuicon:set_image(beautiful.widget_cpu)
+cpuwidget = lain.widgets.cpu({
+    settings = function()
+        widget:set_markup(markup("#e33a6e", cpu_now.usage .. "% "))
+    end
+})
 
 -- Coretemp
 tempicon = wibox.widget.imagebox(beautiful.widget_temp)
 tempwidget = lain.widgets.temp({
     settings = function()
-        widget:set_markup(markup(g_color, coretemp_now .. "°C "))
+        widget:set_markup(markup("#f1af5f", coretemp_now .. "°C "))
     end
 })
 
@@ -159,6 +211,70 @@ batwidget = lain.widgets.bat({
             perc = bat_now.perc .. "% "
         end
         widget:set_text(perc)
+    end
+})
+
+-- ALSA volume
+volicon = wibox.widget.imagebox(beautiful.widget_vol)
+volumewidget = lain.widgets.alsa({
+    settings = function()
+        if volume_now.status == "off" then
+            volume_now.level = volume_now.level .. "M"
+        end
+
+        widget:set_markup(markup("#7493d2", volume_now.level .. "% "))
+    end
+})
+
+-- Net
+netdownicon = wibox.widget.imagebox(beautiful.widget_netdown)
+--netdownicon.align = "middle"
+netdowninfo = wibox.widget.textbox()
+netupicon = wibox.widget.imagebox(beautiful.widget_netup)
+--netupicon.align = "middle"
+netupinfo = lain.widgets.net({
+    settings = function()
+        if iface ~= "network off" and
+           string.match(myweather._layout.text, "N/A")
+        then
+            myweather.update()
+        end
+
+        widget:set_markup(markup("#e54c62", net_now.sent .. " "))
+        netdowninfo:set_markup(markup("#87af5f", net_now.received .. " "))
+    end
+})
+
+-- MEM
+memicon = wibox.widget.imagebox(beautiful.widget_mem)
+memwidget = lain.widgets.mem({
+    settings = function()
+        widget:set_markup(markup("#e0da37", mem_now.used .. "M "))
+    end
+})
+
+-- MPD
+mpdicon = wibox.widget.imagebox()
+mpdwidget = lain.widgets.mpd({
+    settings = function()
+        mpd_notification_preset = {
+            text = string.format("%s [%s] - %s\n%s", mpd_now.artist,
+                   mpd_now.album, mpd_now.date, mpd_now.title)
+        }
+
+        if mpd_now.state == "play" then
+            artist = mpd_now.artist .. " > "
+            title  = mpd_now.title .. " "
+            mpdicon:set_image(beautiful.widget_note_on)
+        elseif mpd_now.state == "pause" then
+            artist = "mpd "
+            title  = "paused "
+        else
+            artist = ""
+            title  = ""
+            mpdicon:set_image(nil)
+        end
+        widget:set_markup(markup("#e54c62", artist) .. markup("#b2b2b2", title))
     end
 })
 
@@ -239,34 +355,52 @@ for s = 1, screen.count() do
     mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
 
     -- Create the upper wibox
-    mywibox[s] = awful.wibox({ position = "top", screen = s, height = 20, opacity = g_opacity })
+    mywibox[s] = awful.wibox({ position = "top", screen = s, height = 20 })
     --border_width = 0, height =  20 })
 
     -- Widgets that are aligned to the upper left
     local left_layout = wibox.layout.fixed.horizontal()
     left_layout:add(mytaglist[s])
     left_layout:add(mypromptbox[s])
+    left_layout:add(mpdicon)
+    left_layout:add(mpdwidget)
 
     -- Widgets that are aligned to the upper right
     local right_layout = wibox.layout.fixed.horizontal()
+    if s == 1 then right_layout:add(wibox.widget.systray()) end
+    --right_layout:add(mailicon)
+    --right_layout:add(mailwidget)
+    right_layout:add(netdownicon)
+    right_layout:add(netdowninfo)
+    right_layout:add(netupicon)
+    right_layout:add(netupinfo)
+    right_layout:add(volicon)
+    right_layout:add(volumewidget)
+    right_layout:add(memicon)
+    right_layout:add(memwidget)
+    right_layout:add(cpuicon)
+    right_layout:add(cpuwidget)
+    right_layout:add(fsicon)
+    right_layout:add(fswidget)
+    right_layout:add(weathericon)
+    right_layout:add(myweather)
     right_layout:add(tempicon)
     right_layout:add(tempwidget)
     right_layout:add(baticon)
     right_layout:add(batwidget)
     right_layout:add(clockicon)
     right_layout:add(mytextclock)
-    if s == 1 then right_layout:add(wibox.widget.systray()) end
 
     -- Now bring it all together (with the tasklist in the middle)
     local layout = wibox.layout.align.horizontal()
     layout:set_left(left_layout)
-    --layout:set_middle(mid_layout)
+    --layout:set_middle(mytasklist[s])
     layout:set_right(right_layout)
 
     mywibox[s]:set_widget(layout)
 
     -- Create the bottom wibox
-    mybottomwibox[s] = awful.wibox({ position = "bottom", screen = s, border_width = 0, height = 20, opacity = g_opacity })
+    mybottomwibox[s] = awful.wibox({ position = "bottom", screen = s, border_width = 0, height = 20 })
     --mybottomwibox[s].visible = false
 
     -- Widgets that are aligned to the bottom left
@@ -282,7 +416,6 @@ for s = 1, screen.count() do
     bottom_layout:set_middle(mytasklist[s])
     bottom_layout:set_right(bottom_right_layout)
     mybottomwibox[s]:set_widget(bottom_layout)
-
 end
 -- }}}
 
@@ -297,18 +430,16 @@ root.buttons(awful.util.table.join(
 -- {{{ Key bindings
 globalkeys = awful.util.table.join(
     -- Take a screenshot
+    -- https://github.com/copycat-killer/dots/blob/master/bin/screenshot
     awful.key({ altkey }, "p", function() os.execute("scrot") end),
-
-    -- lock screen
-    awful.key({ altkey, "Control" }, "l", function () awful.util.spawn(xlocker) end),
 
     -- Tag browsing
     awful.key({ modkey }, "Left",   awful.tag.viewprev       ),
     awful.key({ modkey }, "Right",  awful.tag.viewnext       ),
     awful.key({ modkey }, "Escape", awful.tag.history.restore),
 
-    -- Revelation
-    awful.key({ modkey }, "e", revelation),
+   -- Revelation
+   awful.key({ modkey }, "e", revelation),
 
     -- Non-empty tag browsing
     awful.key({ altkey }, "Left", function () lain.util.tag_view_nonempty(-1) end),
@@ -398,6 +529,52 @@ globalkeys = awful.util.table.join(
 
     -- Widgets popups
     awful.key({ altkey,           }, "c",      function () lain.widgets.calendar:show(7) end),
+    awful.key({ altkey,           }, "h",      function () fswidget.show(7) end),
+    awful.key({ altkey,           }, "w",      function () myweather.show(7) end),
+
+    -- ALSA volume control
+    awful.key({ altkey }, "Up",
+        function ()
+            os.execute(string.format("amixer set %s 1%%+", volumewidget.channel))
+            volumewidget.update()
+        end),
+    awful.key({ altkey }, "Down",
+        function ()
+            os.execute(string.format("amixer set %s 1%%-", volumewidget.channel))
+            volumewidget.update()
+        end),
+    awful.key({ altkey }, "m",
+        function ()
+            os.execute(string.format("amixer set %s toggle", volumewidget.channel))
+            volumewidget.update()
+        end),
+    awful.key({ altkey, "Control" }, "m",
+        function ()
+            os.execute(string.format("amixer set %s 100%%", volumewidget.channel))
+            volumewidget.update()
+        end),
+
+    -- MPD control
+    awful.key({ altkey, "Control" }, "Up",
+        function ()
+            awful.util.spawn_with_shell("mpc toggle || ncmpc toggle || pms toggle")
+            mpdwidget.update()
+        end),
+    awful.key({ altkey, "Control" }, "Down",
+        function ()
+            awful.util.spawn_with_shell("mpc stop || ncmpc stop || pms stop")
+            mpdwidget.update()
+        end),
+    awful.key({ altkey, "Control" }, "Left",
+        function ()
+            awful.util.spawn_with_shell("mpc prev || ncmpc prev || pms prev")
+            mpdwidget.update()
+        end),
+    awful.key({ altkey, "Control" }, "Right",
+        function ()
+            awful.util.spawn_with_shell("mpc next || ncmpc next || pms next")
+            mpdwidget.update()
+        end),
 
     -- Copy to clipboard
     awful.key({ modkey }, "c", function () os.execute("xsel -p -o | xsel -i -b") end),
@@ -418,7 +595,6 @@ globalkeys = awful.util.table.join(
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
               end)
-
 )
 
 clientkeys = awful.util.table.join(
@@ -533,6 +709,8 @@ awful.rules.rules = {
 
     { rule = { class = "Quake" },
           properties = { opacity = g_opacity, floating = true } },
+    { rule = { class = "URxvt" },
+          properties = { opacity = 0.99 } },
 
     { rule = { class = "MPlayer" },
           properties = { floating = true } },
@@ -614,30 +792,13 @@ end)
 -- No border for maximized clients
 client.connect_signal("focus",
     function(c)
-        if c.class == "Conky" then
-            c.border_width = 0
-            return
-        end
         if c.maximized_horizontal == true and c.maximized_vertical == true then
             c.border_color = beautiful.border_normal
         else
             c.border_color = beautiful.border_focus
         end
-        if c.ontop then
-            c.opacity = 1.0
-        end
     end)
-client.connect_signal("unfocus",
-    function(c)
-        if c.class == "Conky" then
-            c.border_width = 0
-            return
-        end
-        c.border_color = beautiful.border_normal 
-        if c.ontop then
-            c.opacity = 0.15
-        end
-    end)
+client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
 -- {{{ Arrange signal handler
@@ -648,7 +809,7 @@ for s = 1, screen.count() do screen[s]:connect_signal("arrange", function ()
         if #clients > 0 then -- Fine grained borders and floaters control
             for _, c in pairs(clients) do -- Floaters always have borders
                 -- No borders with only one humanly visible client
-                if layout == "max" or c.class == "Conky" then
+                if layout == "max" then
                     c.border_width = 0
                 elseif awful.client.floating.get(c) or layout == "floating" then
                     c.border_width = beautiful.border_width
