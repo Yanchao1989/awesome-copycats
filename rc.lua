@@ -55,7 +55,7 @@ end
 
 run_once("unagi")
 --run_once("redshift")
-run_once("variety")
+--run_once("variety")
 run_once("unclutter -root")
 --run_once("conky -c ~/.conky/conkyrc_grey")
 
