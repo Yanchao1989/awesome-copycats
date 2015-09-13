@@ -53,7 +53,6 @@ function run_once(cmd)
   awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
 end
 
-run_once("urxvtd")
 run_once("unagi")
 run_once("unclutter -root")
 -- }}}
@@ -79,11 +78,9 @@ xlocker    = "dm-tool lock"
 browser    = "nautilus --no-desktop"
 browser2   = "firefox"
 gui_editor = "gvim"
-graphics   = "gimp"
 next_wallpaper = "variety -n"
 pre_wallpaper = "variety -p"
-mail       = terminal .. " -e mutt "
-g_opacity  = 0.80
+g_opacity  = 0.90
 g_color    = "#ffffff"
 
 local layouts = {
@@ -105,13 +102,6 @@ for s = 1, screen.count() do
 end
 -- }}}
 
--- {{{ Wallpaper
-if beautiful.wallpaper then
-    for s = 1, screen.count() do
-        gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-    end
-end
--- }}}
 
 -- {{{ Menu
 mymainmenu = awful.menu.new({ items = require("menugen").build_menu(),
@@ -502,7 +492,6 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey }, "q", function () awful.util.spawn(browser) end),
     awful.key({ modkey }, "i", function () awful.util.spawn(browser2) end),
     awful.key({ modkey }, "s", function () awful.util.spawn(gui_editor) end),
-    awful.key({ modkey }, "g", function () awful.util.spawn(graphics) end),
     awful.key({ altkey, "Control" }, "n", function () awful.util.spawn(next_wallpaper) end),
     awful.key({ altkey, "Control" }, "p", function () awful.util.spawn(pre_wallpaper) end),
 
