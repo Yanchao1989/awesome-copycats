@@ -531,6 +531,9 @@ awful.rules.rules = {
     { rule = { class = "Gnome-terminal" },
           properties = { opacity = g_opacity } },
 
+    { rule = { class = "Quake" },
+          properties = { opacity = g_opacity, floating = true } },
+
     { rule = { class = "MPlayer" },
           properties = { floating = true } },
 
