@@ -389,7 +389,7 @@ globalkeys = awful.util.table.join(
     --awful.key({ modkey, "Shift"   }, "q",      awesome.quit),
     awful.key({ modkey, "Shift"   }, "q",      
     function()
-        awful.util.spawn_with_shell("gnome-session-quit")
+        awful.util.spawn_with_shell("gnome-session-quit --logout --no-prompt ")
     end
     ),
 
